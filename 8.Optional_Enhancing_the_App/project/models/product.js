@@ -14,14 +14,17 @@ const getProductsFromFile = fn => {
 }
 
 module.exports = class Product {
-  constructor(title) {
+  constructor(title, imageUrl, description, price) {
     this.title = title;
+    this.imageUrl = imageUrl;
+    this.description = description;
+    this.price = price;
   }
 
   save(fn) {
     getProductsFromFile((products) => {
-      console.log(`this: ${this.title}`);
       const newProducts = [...products];
+      console.log('new product: ', this);
       newProducts.push(this);
       fs.writeFile(p, JSON.stringify(newProducts), (err) => {
         console.log(err);
