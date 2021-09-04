@@ -1,5 +1,5 @@
 const path = require('path');
-const PREDEFINED_USER_ID = '6133c0f037fa1a511db6d2fe';
+const PREDEFINED_USER_ID = '6133c92437fa1a511db6d303';
 const express = require('express');
 const bodyParser = require('body-parser');
 
@@ -21,7 +21,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use((req, res, next) => {
   User.findById(PREDEFINED_USER_ID)
     .then(user => {
-      req.user = user;
+      req.user = new User(user.name, user.email, user.cart, user._id);
       next();
     })
     .catch(err => console.log(err));
