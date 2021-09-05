@@ -39,9 +39,6 @@ exports.getIndex = (req, res, next) => {
 
 exports.getCart = (req, res) => {
   req.user.getCart()
-    .then(cart => {
-      return cart.getProducts();
-    })
     .then(products => {
       res.render('shop/cart', {
         path: '/cart',
