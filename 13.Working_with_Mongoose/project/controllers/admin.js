@@ -55,17 +55,23 @@ exports.postEditProduct = (req, res) => {
   const updatedPrice = req.body.price;
   const updatedImageUrl = req.body.imageUrl;
   const updatedDesc = req.body.description;
-  const product = new Product(updatedTitle, updatedPrice, updatedDesc, updatedImageUrl, prodId);
-  product.save()
-    .then(() => {
-      console.log(`CLOG "Updated product successfully": `, null);
-      res.redirect('/admin/products')
-    })
-    .catch(err => console.log(`CLOG "err": `, err));
-};
 
+  Product.findById(prodId)
+    .then(product => {
+      product.title = updatedTitle;
+      product.price = updatedPrice;
+      product.description = updatedDesc;
+      product.imageUrl = updatedImageUrl;
+      return product.save();
+    })
+    .then(product => {
+      console.log('UPDATED PRODUCT');
+      res.redirect('/admin/products');
+    })
+    .catch(err => console.log(err))
+}
 exports.getProducts = (req, res) => {
-  Product.fetchAll()
+  Product.find()
     .then(products => {
       res.render('admin/products', {
         prods: products,
@@ -80,8 +86,9 @@ exports.getProducts = (req, res) => {
 
 exports.postDeleteProduct = (req, res) => {
   const prodId = req.body["productId"];
-  Product.deletebyId(prodId)
+  Product.findByIdAndRemove(prodId)
     .then(() => {
+      console.log('DESTROYED PRODUCT');
       res.redirect('/admin/products');
     })
     .catch(err => console.log(`CLOG error while deleting the product with ID "${prodId}" "err": `, err));
