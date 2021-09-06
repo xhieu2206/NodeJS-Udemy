@@ -16,7 +16,13 @@ exports.postAddProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  const product = new Product({ title, price, description, imageUrl });
+  const product = new Product({
+    title,
+    price,
+    description,
+    imageUrl,
+    userId: req.user // nhờ có mongoose, sẽ chỉ có _id sẽ được pick để làm reference (thay vì userId = req.user._id)
+  });
   product
     .save() // method đến từ mongoose, thay vì ta phải tạo lại từ đầu
     .then(result => {
@@ -72,6 +78,7 @@ exports.postEditProduct = (req, res) => {
 }
 exports.getProducts = (req, res) => {
   Product.find()
+    // .populate('userId') // là một method của mongoose để populate a certain field với detail information chứ không chỉ có id, như ở đây chúng ta muốn lấy cả thông tin của User. Tham khảo thêm cả method `select` để control những fileds mà chúng ta muốn lấy về khi fetching data với mongoose
     .then(products => {
       res.render('admin/products', {
         prods: products,

@@ -1,4 +1,5 @@
 const Product = require('../models/product');
+const Order = require('../models/order');
 
 exports.getProducts = (req, res, next) => {
   Product.find()
@@ -39,12 +40,13 @@ exports.getIndex = (req, res, next) => {
 };
 
 exports.getCart = (req, res) => {
-  req.user.getCart()
-    .then(products => {
+  req.user
+    .populate('cart.items.productId')
+    .then(user => {
       res.render('shop/cart', {
         path: '/cart',
         pageTitle: 'Your Cart',
-        products: products,
+        products: user.cart.items,
       });
     })
     .catch(err => console.log(`CLOG error while fetching the cart detail "err": `, err));
@@ -64,7 +66,8 @@ exports.postCart = (req, res, next) => {
 
 exports.postCartDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
-  req.user.deleteItemFromCart(prodId)
+  req.user
+    .removeFromCart(prodId)
     .then(() => {
       res.redirect('/cart');
     })
@@ -72,7 +75,10 @@ exports.postCartDeleteProduct = (req, res, next) => {
 };
 
 exports.getOrders = (req, res) => {
-  req.user.getOrders()
+  Order
+    .find({
+      'user.userId': req.user._id,
+    })
     .then(orders => {
       res.render('shop/orders', {
         orders,
@@ -85,9 +91,29 @@ exports.getOrders = (req, res) => {
 
 exports.postOrder = (req, res) => {
   req.user
-    .addOrder()
+    .populate('cart.items.productId')
+    .then(user => {
+      const products = user.cart.items.map(product => {
+        return {
+          product: { ...product.productId._doc }, // Dùng để access data của document
+          quantity: product.quantity,
+        }
+      });
+      const order = new Order({
+        user: {
+          name: req.user.name,
+          userId: req.user,
+        },
+        products,
+      });
+      return order.save();
+    })
+    .then(() => {
+      return req.user.clearCart();
+    })
     .then(() => {
       res.redirect('/orders');
     })
     .catch(err => console.log(`CLOG "err": `, err));
+
 };
