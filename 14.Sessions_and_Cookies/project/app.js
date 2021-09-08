@@ -3,11 +3,20 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const session = require('express-session');
+const MongoDBStore = require('connect-mongodb-session')(session);
 
 const errorController = require('./controllers/error');
 const User = require('./models/user');
+const MONGODB_URI = 'mongodb+srv://xhieu2206:XNZEtGgJ$v6V7n2@nodejs-course.h1piu.mongodb.net/myFirstDatabase?retryWrites=true&w=majority';
+const PRE_DEFINED_USER_ID = '613648d6837d38074d53a701';
 
 const app = express();
+/* setup for saving session in mongodb database */
+const store = new MongoDBStore({
+  uri: MONGODB_URI,
+  collection: 'session',
+})
 
 app.set('view engine', 'ejs');
 app.set('views', 'views');
@@ -18,9 +27,15 @@ const authRoute = require('./routes/auth');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(session({
+  secret: 'my secret',
+  resave: false,
+  saveUninitialized: false,
+  store
+}));
 
 app.use((req, res, next) => {
-  User.findById('613648d6837d38074d53a701')
+  User.findById(PRE_DEFINED_USER_ID)
     .then(user => {
       req.user = user;
       next();
@@ -35,8 +50,7 @@ app.use(authRoute);
 app.use(errorController.get404);
 
 mongoose
-  .connect(
-    'mongodb+srv://xhieu2206:XNZEtGgJ$v6V7n2@nodejs-course.h1piu.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', { useNewUrlParser: true })
+  .connect(MONGODB_URI, { useNewUrlParser: true })
   .then(result => {
     User.findOne().then(user => {
       if (!user) {
