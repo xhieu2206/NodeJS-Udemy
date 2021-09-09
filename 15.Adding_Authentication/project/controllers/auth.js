@@ -36,7 +36,29 @@ exports.postLogin = (req, res, next) => {
     .catch(err => console.log(err));
 };
 
-exports.postSignup = (req, res, next) => {};
+exports.postSignup = (req, res, next) => {
+  const { email, password, confirmPassword } = req.body;
+  // SKIP THE VALIDATION FOR NOW
+  User.
+    findOne({
+      email: email
+    })
+    .then(user =>{
+      if (user) {
+        res.redirect('/signup');
+      }
+      const newUser = new User({
+        email,
+        password,
+        cart: { items: [] },
+      });
+      return newUser.save();
+    })
+    .then(() => {
+      res.redirect('/login');
+    })
+    .catch(err => console.log(err));
+};
 
 exports.postLogout = (req, res, next) => {
   req.session.destroy(err => {
