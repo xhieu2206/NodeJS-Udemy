@@ -9,14 +9,17 @@ const MongoDBStore = require('connect-mongodb-session')(session);
 const errorController = require('./controllers/error');
 const User = require('./models/user');
 const MONGODB_URI = 'mongodb+srv://xhieu2206:XNZEtGgJ$v6V7n2@nodejs-course.h1piu.mongodb.net/myFirstDatabase?retryWrites=true&w=majority';
-const PRE_DEFINED_USER_ID = '613648d6837d38074d53a701';
+const csrf = require('csurf');
 
 const app = express();
 /* setup for saving session in mongodb database */
 const store = new MongoDBStore({
   uri: MONGODB_URI,
   collection: 'sessions',
-})
+});
+
+/* CSRF configuration */
+const csrfProtection = csrf();
 
 app.set('view engine', 'ejs');
 app.set('views', 'views');
@@ -33,6 +36,7 @@ app.use(session({
   saveUninitialized: false,
   store
 }));
+app.use(csrfProtection);
 
 app.use((req, res, next) => {
   if (!req.session.user) {
