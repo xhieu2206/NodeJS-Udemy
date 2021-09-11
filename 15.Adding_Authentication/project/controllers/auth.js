@@ -25,7 +25,6 @@ exports.postLogin = (req, res, next) => {
     res.setHeader('Set-Cookie', 'loggedIn=true');
    */
   const { email, password } = req.body;
-  console.log(email, password);
   User
     .findOne({ email })
     .then(user => {
