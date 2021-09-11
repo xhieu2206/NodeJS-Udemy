@@ -15,7 +15,7 @@ const app = express();
 /* setup for saving session in mongodb database */
 const store = new MongoDBStore({
   uri: MONGODB_URI,
-  collection: 'session',
+  collection: 'sessions',
 })
 
 app.set('view engine', 'ejs');

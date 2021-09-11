@@ -24,15 +24,33 @@ exports.postLogin = (req, res, next) => {
   /* sử dụng session thay cho cookie
     res.setHeader('Set-Cookie', 'loggedIn=true');
    */
+  const { email, password } = req.body;
+  console.log(email, password);
   User
-    .findById(PRE_DEFINED_USER_ID)
+    .findOne({ email })
     .then(user => {
-      req.session.user = user;
-      req.session.isLoggedIn = true;
-      req.session.save(err => {
-        console.log(err);
-        res.redirect('/');
-      });
+      if (!user) {
+        return res.redirect('/login');
+      }
+      bcrypt
+        .compare(password, user.password)
+        .then(doMatch => {
+          /* dù password có matching hay không, chúng ta cũng sẽ vào phần `then`, chứ không phải nếu sai password thì sẽ vào `catch`. `doMatch` sẽ return true hoặc false tùy vào phép so sánh */
+          if (doMatch) {
+            req.session.user = user;
+            req.session.isLoggedIn = true;
+            return req.session.save(err => {
+              console.log(err);
+              res.redirect('/');
+            });
+          } else {
+            res.redirect('/login');
+          }
+        })
+        .catch(err => {
+          console.log(err);
+          res.redirect('/login');
+        });
     })
     .catch(err => console.log(err));
 };
