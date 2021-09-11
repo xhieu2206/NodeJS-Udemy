@@ -1,3 +1,4 @@
+const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 const PRE_DEFINED_USER_ID = '613648d6837d38074d53a701';
 
@@ -36,7 +37,7 @@ exports.postLogin = (req, res, next) => {
     .catch(err => console.log(err));
 };
 
-exports.postSignup = (req, res, next) => {
+exports.postSignup = (req, res) => {
   const { email, password, confirmPassword } = req.body;
   // SKIP THE VALIDATION FOR NOW
   User.
@@ -45,17 +46,20 @@ exports.postSignup = (req, res, next) => {
     })
     .then(user =>{
       if (user) {
-        res.redirect('/signup');
+        return res.redirect('/signup');
       }
-      const newUser = new User({
-        email,
-        password,
-        cart: { items: [] },
-      });
-      return newUser.save();
-    })
-    .then(() => {
-      res.redirect('/login');
+      return bcrypt.hash(password, 12)
+        .then(hashedPassword => {
+          const newUser = new User({
+            email,
+            password: hashedPassword,
+            cart: { items: [] },
+          });
+          return newUser.save();
+        })
+        .then(() => {
+          res.redirect('/login');
+        })
     })
     .catch(err => console.log(err));
 };
