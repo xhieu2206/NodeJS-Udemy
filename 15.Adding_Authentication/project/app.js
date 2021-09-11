@@ -52,6 +52,13 @@ app.use((req, res, next) => {
     .catch(err => console.log(err));
 });
 
+app.use((req, res, next) => {
+  /* cho phép set local vars truyền xuống views, local có nghĩa là nó sẽ chỉ được truyền đến views rendered mà thôi  */
+  res.locals.isAuthenticated = req.session.isLoggedIn;
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
+
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 app.use(authRoute);
