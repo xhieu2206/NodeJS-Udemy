@@ -4,18 +4,31 @@ const PRE_DEFINED_USER_ID = '613648d6837d38074d53a701';
 
 exports.getLogin = (req, res, next) => {
   // const isLoggedIn = req.get('Cookie').split('; ')[2].split('=')[1] === 'true';
+  let message = req.flash('error');
+  if (message.length > 0) {
+    message = message[0];
+  } else {
+    message = null;
+  }
   res.render('auth/login', {
     path: '/login',
     pageTitle: 'Login',
     isAuthenticated: false,
+    errorMessage: message,
   });
 };
 
 exports.getSignup = (req, res, next) => {
+  let message = req.flash('error');
+  if (message.length > 0) {
+    message = message[0];
+  } else {
+    message = null;
+  }
   res.render('auth/signup', {
     path: '/signup',
     pageTitle: 'Signup',
-    isAuthenticated: false
+    errorMessage: message,
   });
 };
 
@@ -29,6 +42,7 @@ exports.postLogin = (req, res, next) => {
     .findOne({ email })
     .then(user => {
       if (!user) {
+        req.flash('error', 'Invalid email or password.');
         return res.redirect('/login');
       }
       bcrypt
@@ -43,6 +57,7 @@ exports.postLogin = (req, res, next) => {
               res.redirect('/');
             });
           } else {
+            req.flash('error', 'Invalid email or password.');
             res.redirect('/login');
           }
         })
@@ -63,6 +78,7 @@ exports.postSignup = (req, res) => {
     })
     .then(user =>{
       if (user) {
+        req.flash('error', 'E-Mail existed already');
         return res.redirect('/signup');
       }
       return bcrypt.hash(password, 12)
