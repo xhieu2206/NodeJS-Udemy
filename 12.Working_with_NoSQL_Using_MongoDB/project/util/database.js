@@ -4,7 +4,7 @@ const MongoClient = mongodb.MongoClient;
 let _db; // the under_score để cho biết rằng biến này sẽ chỉ được dùng ở trong file này thôi
 
 const mongoConnect = (callback) => {
-  MongoClient.connect('mongodb+srv://xhieu2206:XNZEtGgJ$v6V7n2@nodejs-course.h1piu.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
+  MongoClient.connect(process.env.MONGODB_URI)
     .then(client => {
       console.log('Connected');
       _db = client.db()

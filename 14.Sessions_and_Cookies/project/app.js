@@ -8,7 +8,7 @@ const MongoDBStore = require('connect-mongodb-session')(session);
 
 const errorController = require('./controllers/error');
 const User = require('./models/user');
-const MONGODB_URI = 'mongodb+srv://xhieu2206:XNZEtGgJ$v6V7n2@nodejs-course.h1piu.mongodb.net/myFirstDatabase?retryWrites=true&w=majority';
+const MONGODB_URI = process.env.MONGODB_URI;
 const PRE_DEFINED_USER_ID = '613648d6837d38074d53a701';
 
 const app = express();

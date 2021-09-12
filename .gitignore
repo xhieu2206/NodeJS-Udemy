@@ -2,3 +2,4 @@
 
 node_modules/
 udemy_videos
+*.env

@@ -33,7 +33,7 @@ app.use(shopRoutes);
 app.use(errorController.get404);
 
 mongoose
-  .connect('mongodb+srv://xhieu2206:XNZEtGgJ$v6V7n2@nodejs-course.h1piu.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
+  .connect(process.env.MONGODB_URI)
   .then(() => {
     console.log('Connected!!!');
     User
