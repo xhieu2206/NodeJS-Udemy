@@ -31,7 +31,6 @@ exports.getLogin = (req, res) => {
 };
 
 exports.getSignup = (req, res) => {
-  console.log(`"${SENDGRID_API_KEY}"`);
   let message = req.flash('error');
   if (message.length > 0) {
     message = message[0];
