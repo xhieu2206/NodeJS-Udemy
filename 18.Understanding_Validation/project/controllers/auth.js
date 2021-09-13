@@ -27,8 +27,10 @@ exports.getLogin = (req, res) => {
   res.render('auth/login', {
     path: '/login',
     pageTitle: 'Login',
-    isAuthenticated: false,
     errorMessage: message,
+    oldInput: {
+      email: '', password: ''
+    }
   });
 };
 
@@ -43,6 +45,9 @@ exports.getSignup = (req, res) => {
     path: '/signup',
     pageTitle: 'Signup',
     errorMessage: message,
+    oldInput: {
+      email: '', password: '', confirmPassword: ''
+    }
   });
 };
 
@@ -52,6 +57,18 @@ exports.postLogin = (req, res) => {
     res.setHeader('Set-Cookie', 'loggedIn=true');
    */
   const { email, password } = req.body;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).render('auth/login', {
+      path: '/login',
+      pageTitle: 'Login',
+      errorMessage: errors.array()[0].msg,
+      oldInput: {
+        email, password
+      }
+    });
+  }
+
   User
     .findOne({ email })
     .then(user => {
@@ -84,13 +101,14 @@ exports.postLogin = (req, res) => {
 };
 
 exports.postSignup = (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, confirmPassword } = req.body;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(422).render('auth/signup', {
       path: '/signup',
       pageTitle: 'Signup',
       errorMessage: errors.array()[0].msg,
+      oldInput: { email, password, confirmPassword }
     });
   }
   bcrypt
