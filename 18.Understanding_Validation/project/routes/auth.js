@@ -4,6 +4,7 @@ const { check, body } = require('express-validator');
 const router = express.Router();
 
 const authController = require('../controllers/auth');
+const User = require('../models/user');
 
 router.get('/login', authController.getLogin);
 
@@ -17,12 +18,24 @@ router.post('/signup',
     check('email')
       .isEmail()
       .withMessage('Please enter a valid email')
-      .custom((value, {req}) => {
+      .custom((value) => {
         if (value === 'test@test.com') {
           throw new Error('This email address is not allow');
         }
+        return User.
+          findOne({
+            email: value
+          })
+          .then(user => {
+            if (user) {
+              /* throw an error inside the promise */
+              return Promise.reject('E-Mail existed already, please pick a different one!!!');
+            }
+          })
+          .catch(err => console.log(err));
+
         /* return true nếu như chúng ta success, nếu không chúng ta sẽ luôn failed the validation */
-        return true;
+        // return true;
       }),
     /* `body` nghĩa là chỉ look for params ở body, `check` sẽ tìm kiếm ở tất cả mọi nơi. Đây là 1 cách khác để thiết đặt error message */
     body('password', 'Please enter a password with only numbers and text and at least 5 characters')
