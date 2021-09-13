@@ -18,7 +18,6 @@ const transporter = nodemailer.createTransport(sendgridTransport({
 }));
 
 exports.getLogin = (req, res) => {
-  // const isLoggedIn = req.get('Cookie').split('; ')[2].split('=')[1] === 'true';
   let message = req.flash('error');
   if (message.length > 0) {
     message = message[0];
@@ -85,14 +84,14 @@ exports.postLogin = (req, res) => {
 };
 
 exports.postSignup = (req, res) => {
-  const { email, password, confirmPassword } = req.body;
+  const { email, password } = req.body;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     console.log(errors);
     return res.status(422).render('auth/signup', {
       path: '/signup',
       pageTitle: 'Signup',
-      errorMessage: errors.array(),
+      errorMessage: errors.array()[0].msg,
     });
   }
   User.
