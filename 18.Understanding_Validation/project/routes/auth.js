@@ -10,7 +10,19 @@ router.get('/login', authController.getLogin);
 
 router.get('/signup', authController.getSignup);
 
-router.post('/login', authController.postLogin);
+router.post(
+  '/login',
+  [
+    body('email')
+      .isEmail()
+      .withMessage('Please enter an valid email')
+      .normalizeEmail(),
+    body('password', 'Password has to be valid')
+      .isLength({ min: 5})
+      .isAlphanumeric()
+      .trim(),
+  ],
+  authController.postLogin);
 
 /* chúng ta sẽ truyền vào name của field mà chúng ta quan tâm, và method chúng ta muốn apply lên field đó để validation */
 router.post('/signup',
@@ -36,12 +48,15 @@ router.post('/signup',
 
         /* return true nếu như chúng ta success, nếu không chúng ta sẽ luôn failed the validation */
         // return true;
-      }),
+      })
+      .normalizeEmail(),
     /* `body` nghĩa là chỉ look for params ở body, `check` sẽ tìm kiếm ở tất cả mọi nơi. Đây là 1 cách khác để thiết đặt error message */
     body('password', 'Please enter a password with only numbers and text and at least 5 characters')
       .isLength({ min: 5 })
-      .isAlphanumeric(),
+      .isAlphanumeric()
+      .trim(),
     body('confirmPassword')
+      .trim()
       .custom((value, { req }) => {
         if (value !== req.body.password) {
           throw new Error('Passwords have to match!!!');
