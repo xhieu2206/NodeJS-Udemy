@@ -39,7 +39,6 @@ router.post('/signup',
             email: value
           })
           .then(user => {
-            console.log('Founded User');
             if (user) {
               /* throw an error inside the promise */
               return Promise.reject('E-Mail existed already, please pick a different one!!!');

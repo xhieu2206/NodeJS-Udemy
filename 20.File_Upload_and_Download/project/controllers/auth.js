@@ -87,7 +87,6 @@ exports.postLogin = (req, res, next) => {
             req.session.user = user;
             req.session.isLoggedIn = true;
             return req.session.save(err => {
-              console.log(err);
               res.redirect('/');
             });
           } else {
@@ -103,7 +102,6 @@ exports.postLogin = (req, res, next) => {
           }
         })
         .catch(err => {
-          console.log(err);
           res.redirect('/login');
         });
     })
@@ -154,7 +152,6 @@ exports.postSignup = (req, res, next) => {
 
 exports.postLogout = (req, res) => {
   req.session.destroy(err => {
-    console.log(err);
     res.redirect('/');
   })
 };
