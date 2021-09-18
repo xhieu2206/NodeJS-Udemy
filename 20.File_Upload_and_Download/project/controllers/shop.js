@@ -145,14 +145,34 @@ exports.getOrders = (req, res, next) => {
 
 exports.getInvoice = (req, res, next) => {
   const orderId = req.params['orderId'];
-  console.log(`CLOG getInvoice "orderId": `, orderId);
-  const invoiceName = `invoice-${orderId}.pdf`;
-  const invoicePath = path.join('data', 'invoices', invoiceName);
-  fs.readFile(invoicePath, (err, data) => {
-    if (err) {
-      console.log(`CLOG "err": `, err);
-      return next();
-    }
-    res.send(data);
-  });
+  Order.
+    findById(orderId)
+    .then(order => {
+      if (!order) {
+        return next(new Error('No order was found!!!'));
+      }
+      if (order.user.userId.toString() !== req.user._id.toString()) {
+        return next(new Error('Unauthorized!!!'));
+      }
+      const invoiceName = `invoice-${orderId}.pdf`;
+      const invoicePath = path.join('data', 'invoices', invoiceName);
+      /* sử dụng streaming data thay thế, thích hợp hơn cho bigger file
+        fs.readFile(invoicePath, (err, data) => {
+          if (err) {
+            console.log(`CLOG "err": `, err);
+            return next();
+          }
+          res.setHeader('Content-Type', 'application/pdf');
+          res.setHeader('Content-Disposition', `inline; filename="${invoiceName}"`);
+          res.send(data);
+        });
+       */
+      const file = fs.createReadStream(invoicePath);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename="${invoiceName}"`);
+      file.pipe(res);
+    })
+    .catch(err => {
+      next(err);
+    })
 }
