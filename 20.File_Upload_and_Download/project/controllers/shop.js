@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const PDFdocument = require('pdfkit');
+const PDFDocument = require('pdfkit');
 
 const Product = require('../models/product');
 const Order = require('../models/order');
@@ -168,7 +168,7 @@ exports.getInvoice = (req, res, next) => {
           res.send(data);
         });
        */
-      const pdfDoc = new PDFdocument();
+      const pdfDoc = new PDFDocument();
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `inline; filename="${invoiceName}"`);
 
