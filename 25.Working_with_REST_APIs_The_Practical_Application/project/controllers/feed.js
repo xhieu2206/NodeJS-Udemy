@@ -1,22 +1,24 @@
 const { validationResult } = require('express-validator');
+const fs = require('fs');
+const path = require('path');
 
 const Post = require('../models/post');
 
 exports.getPosts = (req, res, next) => {
-  res.status(200).json({
-    posts: [
-      {
-        _id: '123',
-        title: 'First Post',
-        content: 'First Content',
-        imageUrl: 'images/ga-2100hc-2a_b033ce08dc9147c28bd6eea207a62432_large.png',
-        creator: {
-          name: 'xhieu2206',
-        },
-        createdAt: new Date(),
-      },
-    ]
-  });
+  Post
+    .find()
+    .then(posts => {
+      res.status(200).json({
+        message: 'Fetched posts successfully',
+        posts,
+      });
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
 }
 
 exports.createPost = (req, res, next) => {
@@ -27,12 +29,19 @@ exports.createPost = (req, res, next) => {
     throw error;
   }
 
+  if (!req.file) {
+    const error = new Error('No image provided');
+    error.statusCode = 422;
+    throw error;
+  }
+
+  const imageUrl = req.file.path.replace('\\', `/`);
   const title = req.body['title'];
   const content = req.body['content'];
   const post = new Post({
     title,
     content,
-    imageUrl: 'images/ga-2100hc-2a_b033ce08dc9147c28bd6eea207a62432_large.png',
+    imageUrl,
     creator: {
       name: 'xhieu2206'
     },
@@ -52,4 +61,82 @@ exports.createPost = (req, res, next) => {
       }
       next(err);
     });
+}
+
+exports.getPost = (req, res, next) => {
+  const postId = req.params['postId'];
+  Post
+    .findById(postId)
+    .then(post => {
+      if (!post) {
+        const error = new Error('Could not find post');
+        error.statusCode = 404;
+        throw error;
+      }
+      res.status(200).json({
+        message: 'Post fetched.',
+        post,
+      });
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    })
+}
+
+exports.updatePost = (req, res, next) => {
+  const postId = req.params['postId'];
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error('Validation failed, entered data is incorrect.');
+    error.statusCode = 422;
+    throw error;
+  }
+
+  const title = req.body['title'];
+  const content = req.body['content'];
+  let imageUrl = req.body['image'];
+
+  if (req.file) {
+    imageUrl = req.file.path;
+  }
+  if (!imageUrl) {
+    const error = new Error('No file picked.');
+    error.statusCode = 422;
+    throw error;
+  }
+  Post.findById(postId)
+    .then(post => {
+      if (!post) {
+        const error = new Error('Could not find post');
+        error.statusCode = 404;
+        throw error;
+      }
+      if (imageUrl !== post.imageUrl) {
+        clearImage(post.imageUrl);
+      }
+      post.title = title;
+      post.imageUrl = imageUrl.replace('\\', `/`);
+      post.content = content;
+      return post.save();
+    })
+    .then(post => {
+      res.status(200).json({
+        message: 'Post updated!!!',
+        post,
+      })
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    })
+}
+
+const clearImage = filePath => {
+  filePath = path.join(__dirname, '..', filePath);
+  fs.unlink(filePath, err => console.log(err));
 }
