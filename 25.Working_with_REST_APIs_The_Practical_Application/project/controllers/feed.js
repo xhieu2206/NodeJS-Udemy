@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const Post = require('../models/post');
+const User = require('../models/user');
 
 exports.getPosts = (req, res, next) => {
   const currentPage = req.query['page'] || 1;
@@ -41,7 +42,7 @@ exports.createPost = (req, res, next) => {
     error.statusCode = 422;
     throw error;
   }
-
+  console.log(`CLOG "req.userId": `, req.userId);
   const imageUrl = req.file.path.replace('\\', `/`);
   const title = req.body['title'];
   const content = req.body['content'];
@@ -49,17 +50,23 @@ exports.createPost = (req, res, next) => {
     title,
     content,
     imageUrl,
-    creator: {
-      name: 'xhieu2206'
-    },
+    creator: req.userId,
   });
   post
     .save()
     .then(post => {
       console.log('CREATED SUCCESSFULLY!!!');
+      return User.findById(req.userId);
+    })
+    .then(user => {
+      user.posts.push(post);
+      return user.save()
+    })
+    .then(user => {
       res.status(201).json({
         message: 'Post created successfully',
-        post
+        post,
+        creator: { _id: user._id, name: user.name }
       });
     })
     .catch(err => {
@@ -121,6 +128,11 @@ exports.updatePost = (req, res, next) => {
         error.statusCode = 404;
         throw error;
       }
+      if (post.creator.toString() !== req.userId) {
+        const error = new Error('not Authorized!!!');
+        error.statusCode = 403;
+        throw error;
+      }
       if (imageUrl !== post.imageUrl) {
         clearImage(post.imageUrl);
       }
@@ -152,11 +164,22 @@ exports.deletePost = (req, res, next) => {
         error.statusCode = 404;
         throw error;
       }
+      if (post.creator.toString() !== req.userId) {
+        const error = new Error('not Authorized!!!');
+        error.statusCode = 403;
+        throw error;
+      }
 
-      // check logged in user
       clearImage(post.imageUrl);
 
       return Post.findByIdAndRemove(postId);
+    })
+    .then(() => {
+      return User.findById(req.userId);
+    })
+    .then(user => {
+      user.posts.pull(postId);
+      return user.save();
     })
     .then(() => {
       res.status(200).json({
