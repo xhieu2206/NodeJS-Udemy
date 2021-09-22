@@ -5,7 +5,11 @@ const multer = require('multer');
 const path = require('path');
 
 const MONGODB_URI = process.env.MONGODB_URI;
+const PORT = process.env.PORT;
+
+// routes
 const feedRoutes = require('./routes/feed');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 
@@ -44,17 +48,19 @@ app.use((req, res, next) => {
 })
 
 app.use('/feed', feedRoutes);
+app.use('/auth', authRoutes);
 
 app.use((error, req, res, next) => {
   const status = error.statusCode || 500;
   const message = error.message;
-  res.status(status).json({ message });
+  const data = error.data;
+  res.status(status).json({ message, data });
 })
 
 mongoose
   .connect(MONGODB_URI)
   .then(() => {
     console.log('CONNECTED!!!');
-    app.listen(8080);
+    app.listen(PORT);
   })
   .catch(err => console.log(err));
