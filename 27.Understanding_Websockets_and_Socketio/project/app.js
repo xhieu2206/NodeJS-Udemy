@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const path = require('path');
+const io = require('socket.io');
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const PORT = process.env.PORT;
@@ -61,6 +62,9 @@ mongoose
   .connect(MONGODB_URI)
   .then(() => {
     console.log('CONNECTED!!!');
-    app.listen(PORT);
+    const server = app.listen(PORT);
+    io(server).sockets.on('connection', socket => {
+      console.log('Socket connected');
+    })
   })
   .catch(err => console.log(err));

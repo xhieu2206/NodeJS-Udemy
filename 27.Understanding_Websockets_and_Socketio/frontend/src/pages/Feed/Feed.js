@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import openSocket from 'socket.io-client';
 
 import Post from '../../components/Feed/Post/Post';
 import Button from '../../components/Button/Button';
@@ -22,7 +23,9 @@ class Feed extends Component {
   };
 
   componentDidMount() {
-    fetch('URL')
+    console.log('ABC')
+    openSocket('http://localhost:8080');
+    fetch('http://localhost:8080/auth/status')
       .then(res => {
         if (res.status !== 200) {
           throw new Error('Failed to fetch user status.');
