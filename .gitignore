@@ -4,3 +4,5 @@ node_modules/
 udemy_videos
 *.env
 nodemon.json
+server.key
+server.cert
