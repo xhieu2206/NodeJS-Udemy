@@ -28,8 +28,8 @@ const store = new MongoDBStore({
 /* CSRF configuration */
 const csrfProtection = csrf();
 
-const privateKey = fs.readFileSync('server.key');
-const certificate = fs.readFileSync('server.cert');
+// const privateKey = fs.readFileSync('server.key');
+// const certificate = fs.readFileSync('server.cert');
 
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -138,6 +138,7 @@ mongoose
   .then(() => {
     console.log('Connected!!!');
     app.listen(process.env.PORT || 4000);
+
     /* SSL Setup
       https.createServer({
         key: privateKey,
